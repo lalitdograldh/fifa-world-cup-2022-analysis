@@ -429,3 +429,22 @@ def top_clubs_under_25():
     except Exception as e:
         return f"Error: {e}"
 
+def top_players_goals_per_90():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    club,
+                    goals,
+                    ROUND(minutes_90s, 2) AS games_90s,
+                    ROUND(goals_per90, 2) AS goals_per_90
+                FROM player_stats
+                ORDER BY goals_per90 DESC
+                LIMIT 10
+            """)
+            result = conn.execute(query).fetchall()
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        return f"Error: {e}"

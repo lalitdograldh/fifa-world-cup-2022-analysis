@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from code.import_csv import import_csv_files
-from code.queries import get_goals_inside_outside_by_venue, get_match_with_max_attendance, get_total_matches,get_unique_referees,get_most_common_match_hour,get_match_by_number,get_possession_by_match_number,get_goal_prevention_by_match_number,get_match_with_max_shots_team1,get_match_with_max_shots_team2,get_match_with_max_attendance,get_possession_and_conversion_al_janoub,get_goals_inside_outside_by_venue,get_conversion_rate_inside_outside_by_venue,get_match_data_two_teams, get_top_goals, get_top_assists, get_top_yellow_cards, get_top_red_cards, get_top_dribble_success,get_goal_scoring_efficiency_per_game,get_portuguese_offensive_limited_starts,get_club_goals_comparison,get_goals_under_25,get_goals_25_and_over
+from code.queries import get_goals_inside_outside_by_venue, get_match_with_max_attendance, get_total_matches,get_unique_referees,get_most_common_match_hour,get_match_by_number,get_possession_by_match_number,get_goal_prevention_by_match_number,get_match_with_max_shots_team1,get_match_with_max_shots_team2,get_match_with_max_attendance,get_possession_and_conversion_al_janoub,get_goals_inside_outside_by_venue,get_conversion_rate_inside_outside_by_venue,get_match_data_two_teams, get_top_goals, get_top_assists, get_top_yellow_cards, get_top_red_cards, get_top_dribble_success,get_goal_scoring_efficiency_per_game,get_portuguese_offensive_limited_starts,get_club_goals_comparison,get_goals_under_25,get_goals_25_and_over,top_clubs_under_25,top_players_goals_per_90
 from typing import Optional
 app = FastAPI(title="Football Analysis API", version="1.0.0")
 
@@ -127,9 +127,13 @@ def goals_25_and_over():
 
 @app.get("/top-clubs-under-25")  #Module3-Task 7
 def api_top_clubs_under_25():
-    from code.queries import top_clubs_under_25
     result = top_clubs_under_25()
     return {"top_clubs_under_25": result}
+
+@app.get("/top-10-players-goals-per-90")  #Module 4 - Task 1
+def api_top_players_goals_per_90():
+    result = top_players_goals_per_90()
+    return {"top_players_goals_per_90": result}
 
 
 @app.get("/match/{match_number}")
