@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from code.import_csv import import_csv_files
-from code.queries import get_goals_inside_outside_by_venue, get_match_with_max_attendance, get_total_matches,get_unique_referees,get_most_common_match_hour,get_match_by_number,get_possession_by_match_number,get_goal_prevention_by_match_number,get_match_with_max_shots_team1,get_match_with_max_shots_team2,get_match_with_max_attendance,get_possession_and_conversion_al_janoub,get_goals_inside_outside_by_venue,get_conversion_rate_inside_outside_by_venue,get_match_data_two_teams, get_top_goals, get_top_assists, get_top_yellow_cards, get_top_red_cards, get_top_dribble_success,get_goal_scoring_efficiency_per_game,get_portuguese_offensive_limited_starts,get_club_goals_comparison,get_goals_under_25,get_goals_25_and_over,top_clubs_under_25,top_players_goals_per_90,get_players_highest_shot_accuracy,get_players_highest_shot_accuracy_proxy,top_clubs_young_high_accuracy_players,top_teams_young_high_accuracy_players,player_performance_analysis
-from typing import Optional
+from code.queries import get_goals_inside_outside_by_venue, get_match_with_max_attendance, get_total_matches,get_unique_referees,get_most_common_match_hour,get_match_by_number,get_possession_by_match_number,get_goal_prevention_by_match_number,get_match_with_max_shots_team1,get_match_with_max_shots_team2,get_match_with_max_attendance,get_possession_and_conversion_al_janoub,get_goals_inside_outside_by_venue,get_conversion_rate_inside_outside_by_venue,get_match_data_two_teams, get_top_goals, get_top_assists, get_top_yellow_cards, get_top_red_cards, get_top_dribble_success,get_goal_scoring_efficiency_per_game,get_portuguese_offensive_limited_starts,get_club_goals_comparison,get_goals_under_25,get_goals_25_and_over,top_clubs_under_25,top_players_goals_per_90,get_players_highest_shot_accuracy,get_players_highest_shot_accuracy_proxy,top_clubs_young_high_accuracy_players,top_teams_young_high_accuracy_players,player_performance_analysis,get_players_att_pen_touches,get_att_pen_players_by_club,get_avg_touches_by_area,get_avg_touches_by_area_players_starting_with_a,get_goal_distribution_by_position,get_top_scoring_defenders,get_top_scoring_midfielders,get_top_scoring_forward,get_best_shots_on_target_per_progressive_pass
+from typing import Dict, Optional
 app = FastAPI(title="Football Analysis API", version="1.0.0")
 
 @app.get("/")
@@ -170,6 +170,67 @@ def api_player_performance_analysis():
         "definition": "Performance analysis of players based on games, goals, shooting accuracy (proxy via goals_per90), assists per 90, and goals per 90.",
         "players": result
     }
+@app.get("/players/attacking-pen-touches")
+def players_att_pen_touches():
+    result = get_players_att_pen_touches()
+    return {"players_att_pen_touches": result}
+
+@app.get("/clubs/att-pen-players")
+def clubs_att_pen_players():
+    result = get_att_pen_players_by_club()
+    return {"clubs_att_pen_players": result}
+
+@app.get("/average-touches")
+def average_touches():
+    avg_touches = get_avg_touches_by_area()
+    return avg_touches
+@app.get("/players/average-touches-starting-with-a")
+def average_touches_players_starting_with_a():
+    result = get_avg_touches_by_area_players_starting_with_a()
+    return {
+        "filter": "Players whose names start with 'A'",
+        "average_touches": result
+    }
+@app.get("/goals/distribution-by-position")
+def goals_distribution_by_position():
+    result = get_goal_distribution_by_position()
+    return {
+        "definition": "Total goals scored by players grouped by position",
+        "distribution": result
+    }
+@app.get("/players/top-scoring-defender")
+def top_scoring_defender():
+    result = get_top_scoring_defenders()
+    return {
+        "definition": "Defender with the highest number of goals scored",
+        "player": result
+    }
+@app.get("/players/top-scoring-midfielder")
+def top_scoring_midfielder():
+    result = get_top_scoring_midfielders()
+    return {
+        "definition": "Midfielder with the highest number of goals scored",
+        "player": result
+    }
+
+@app.get("/players/top-scoring-forward")
+def top_scoring_forward():
+    result = get_top_scoring_forward()
+    return {
+        "definition": "Forward with the highest number of goals scored",
+        "player": result
+    }
+@app.get("/players/efficiency/shots-on-target-per-progressive-pass")
+def player_efficiency_shots_on_target_per_progressive_pass():
+    result = get_best_shots_on_target_per_progressive_pass()
+    return {
+        "definition": (
+            "Player with the highest ratio of shots on target to progressive passes "
+            "received among the top 200 players by progressive passes received"
+        ),
+        "player": result
+    }
+
 @app.get("/match/{match_number}")
 def match_details(match_number: int): 
     result = get_match_by_number(match_number)

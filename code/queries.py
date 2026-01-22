@@ -556,3 +556,192 @@ def player_performance_analysis():
                 return {"message": f"No data found for player."}
     except Exception as e:
         return f"Error: {e}"
+    
+def get_players_att_pen_touches():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT 
+                    player,
+                    team,
+                    touches_att_pen_area
+                FROM player_possession
+                WHERE touches_att_pen_area > 0
+                ORDER BY touches_att_pen_area DESC,  -- Most touches first
+                player ASC;
+            """)
+            result = conn.execute(query).fetchall()
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        return f"Error: {e}"    
+    
+def get_att_pen_players_by_club():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT 
+                    ps.club,
+                    COUNT(pp.player) AS num_players
+                FROM player_possession pp
+                JOIN player_stats ps ON pp.player = ps.player
+                WHERE pp.touches_att_pen_area > 0
+                GROUP BY ps.club
+                ORDER BY num_players DESC;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No attacking penalty area touch data found for club."}
+    except Exception as e:
+        return f"Error: {e}"
+
+def get_avg_touches_by_area():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT team, ROUND(AVG(touches_def_pen_area), 2) AS avg_touches_def_pen_area, ROUND(AVG(touches_def_3rd), 2) AS avg_touches_def_3rd, ROUND(AVG(touches_mid_3rd), 2) AS avg_touches_mid_3rd, ROUND(AVG(touches_att_3rd), 2) AS avg_touches_att_3rd, ROUND(AVG(touches_att_pen_area), 2) AS avg_touches_att_pen_area FROM player_possession GROUP BY team ORDER BY team;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No touch data found for areas."}
+    except Exception as e:
+        return f"Error: {e}"    
+    
+def get_avg_touches_by_area_players_starting_with_a():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT 
+                    ROUND(AVG(touches_def_pen_area), 2) AS avg_def_pen_area, 
+                    ROUND(AVG(touches_def_3rd), 2) AS avg_def_third, 
+                    ROUND(AVG(touches_mid_3rd), 2) AS avg_mid_third, 
+                    ROUND(AVG(touches_att_3rd), 2) AS avg_att_third, 
+                    ROUND(AVG(touches_att_pen_area), 2) AS avg_att_pen_area 
+                FROM player_possession 
+                WHERE player LIKE 'A%';
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No touch data found for players starting with A."}
+    except Exception as e:
+        return f"Error: {e}" 
+
+def get_goal_distribution_by_position():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    position,
+                    SUM(goals) AS total_goals
+                FROM player_stats
+                GROUP BY position
+                ORDER BY total_goals DESC;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No goal data found by position."}
+    except Exception as e:
+        return f"Error: {e}"       
+
+def get_top_scoring_defenders():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    goals
+                FROM player_stats
+                WHERE position = 'DF'
+                ORDER BY goals DESC
+                LIMIT 5;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No data found for defenders."}
+    except Exception as e:
+        return f"Error: {e}"    
+
+def get_top_scoring_midfielders():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    goals
+                FROM player_stats
+                WHERE position = 'MF'
+                ORDER BY goals DESC
+                LIMIT 5;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No data found for midfielders."}
+    except Exception as e:
+        return f"Error: {e}"    
+
+def get_top_scoring_forward():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    goals
+                FROM player_stats
+                WHERE position = 'FW'
+                ORDER BY goals DESC
+                LIMIT 5;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No data found for forwards."}
+    except Exception as e:
+        return f"Error: {e}"   
+
+def get_best_shots_on_target_per_progressive_pass():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT *
+                FROM (
+                    SELECT
+                        pp.player,
+                        pp.team,
+                        pp.progressive_passes_received,
+                        ps.shots_on_target,
+                        ROUND(
+                            ps.shots_on_target / NULLIF(pp.progressive_passes_received, 0),
+                            4
+                        ) AS shots_on_target_per_progressive_pass
+                    FROM player_possession pp
+                    JOIN player_shooting ps
+                        ON pp.player = ps.player
+                    WHERE pp.progressive_passes_received > 0
+                    ORDER BY pp.progressive_passes_received DESC
+                    LIMIT 200
+                ) ranked_players
+                ORDER BY shots_on_target_per_progressive_pass DESC
+                LIMIT 1;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No data found for shots on target per progressive pass."}
+    except Exception as e:
+        return f"Error: {e}"    
