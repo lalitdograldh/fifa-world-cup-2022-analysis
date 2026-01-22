@@ -448,3 +448,111 @@ def top_players_goals_per_90():
             return [dict(row._mapping) for row in result]
     except Exception as e:
         return f"Error: {e}"
+
+def get_players_highest_shot_accuracy():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    club,
+                    goals,
+                    games,
+                    ROUND(goals / NULLIF(games, 0), 2) AS goals_per_game,
+                    ROUND(goals_per90, 2) AS goals_per_90
+                FROM player_stats
+                WHERE games > 0
+                ORDER BY goals_per_90 DESC
+                LIMIT 10;
+            """)
+            result = conn.execute(query).fetchall()
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        return f"Error: {e}"    
+
+def get_players_highest_shot_accuracy_proxy():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    club,
+                    goals,
+                    games,
+                    ROUND(goals / NULLIF(games, 0), 2) AS goals_per_game,
+                    ROUND(goals_per90, 2) AS goals_per_90
+                FROM player_stats
+                WHERE games > 0 AND goals > 2
+                ORDER BY goals_per_90 DESC
+                LIMIT 10;
+            """)
+            result = conn.execute(query).fetchall()
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        return f"Error: {e}"
+
+def top_clubs_young_high_accuracy_players():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    club,
+                    COUNT(*) AS high_accuracy_young_players
+                FROM player_stats
+                WHERE age < 28
+                AND goals > 0
+                AND (goals_per90 * 100) > 20  -- proxy for "shot accuracy over 20%"
+                GROUP BY club
+                ORDER BY high_accuracy_young_players DESC;
+
+            """)
+            result = conn.execute(query).fetchall()
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        return f"Error: {e}"    
+
+def top_teams_young_high_accuracy_players():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    team,
+                    COUNT(*) AS high_accuracy_young_players
+                FROM player_stats
+                WHERE age < 28
+                AND goals > 0
+                AND (goals_per90 * 100) > 20  -- proxy for "shot accuracy over 20%"
+                GROUP BY team
+                ORDER BY high_accuracy_young_players DESC;
+            """)
+            result = conn.execute(query).fetchall()
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        return f"Error: {e}"    
+    
+def player_performance_analysis():
+    try:
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    player,
+                    team,
+                    club,
+                    games,
+                    goals,
+                    ROUND(goals_per90, 2) AS goals_per_90,
+                    ROUND(assists_per90, 2) AS assists_per_90,
+                    ROUND(goals_per90 * 100, 2) AS shooting_accuracy_proxy
+                FROM player_stats
+                WHERE games > 2
+                ORDER BY goals DESC, player ASC;
+            """)
+            result = conn.execute(query).fetchall()
+            if result:
+                return [dict(row._mapping) for row in result]
+            else:
+                return {"message": f"No data found for player."}
+    except Exception as e:
+        return f"Error: {e}"
