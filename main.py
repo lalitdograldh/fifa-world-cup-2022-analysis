@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from code.import_csv import import_csv_files
-from code.queries import get_goals_inside_outside_by_venue, get_match_with_max_attendance, get_total_matches,get_unique_referees,get_most_common_match_hour,get_match_by_number,get_possession_by_match_number,get_goal_prevention_by_match_number,get_match_with_max_shots_team1,get_match_with_max_shots_team2,get_match_with_max_attendance,get_possession_and_conversion_al_janoub,get_goals_inside_outside_by_venue,get_conversion_rate_inside_outside_by_venue,get_match_data_two_teams, get_top_goals, get_top_assists, get_top_yellow_cards, get_top_red_cards, get_top_dribble_success,get_goal_scoring_efficiency_per_game,get_portuguese_offensive_limited_starts,get_club_goals_comparison,get_goals_under_25,get_goals_25_and_over,top_clubs_under_25,top_players_goals_per_90
+from code.queries import get_goals_inside_outside_by_venue, get_match_with_max_attendance, get_total_matches,get_unique_referees,get_most_common_match_hour,get_match_by_number,get_possession_by_match_number,get_goal_prevention_by_match_number,get_match_with_max_shots_team1,get_match_with_max_shots_team2,get_match_with_max_attendance,get_possession_and_conversion_al_janoub,get_goals_inside_outside_by_venue,get_conversion_rate_inside_outside_by_venue,get_match_data_two_teams, get_top_goals, get_top_assists, get_top_yellow_cards, get_top_red_cards, get_top_dribble_success,get_goal_scoring_efficiency_per_game,get_portuguese_offensive_limited_starts,get_club_goals_comparison,get_goals_under_25,get_goals_25_and_over,top_clubs_under_25,top_players_goals_per_90,get_players_highest_shot_accuracy,get_players_highest_shot_accuracy_proxy,top_clubs_young_high_accuracy_players,top_teams_young_high_accuracy_players,player_performance_analysis
 from typing import Optional
 app = FastAPI(title="Football Analysis API", version="1.0.0")
 
@@ -135,7 +135,41 @@ def api_top_players_goals_per_90():
     result = top_players_goals_per_90()
     return {"top_players_goals_per_90": result}
 
-
+@app.get("/players/highest-shot-accuracy")
+def players_highest_shot_accuracy():
+    result = get_players_highest_shot_accuracy()
+    return {
+        "definition": "Shot accuracy approximated using goals per 90 (dataset does not contain shot counts)",
+        "players": result
+    }    
+@app.get("/players/highest-shot-accuracy-proxy")
+def players_highest_shot_accuracy_proxy():
+    result = get_players_highest_shot_accuracy_proxy()
+    return {
+        "definition": "Shot accuracy proxy using goals per 90 and goals per game (dataset has no shots column). Only players with goals > 2 are included.",
+        "players": result
+    }
+@app.get("/clubs/young-high-accuracy-players")
+def api_top_clubs_young_high_accuracy_players():
+    result = top_clubs_young_high_accuracy_players()
+    return {
+        "definition": "Clubs with the highest number of players under 28 exhibiting high shot accuracy (proxy via goals_per90 > 0.2) and having scored goals.",
+        "clubs": result
+    }
+@app.get("/teams/young-high-accuracy-players")
+def api_top_teams_young_high_accuracy_players():
+    result = top_teams_young_high_accuracy_players()
+    return {
+        "definition": "Teams with the highest number of players under 28 exhibiting high shot accuracy (proxy via goals_per90 > 0.2) and having scored goals.",
+        "teams": result
+    }
+@app.get("/players/performance-analysis")
+def api_player_performance_analysis():
+    result = player_performance_analysis()
+    return {
+        "definition": "Performance analysis of players based on games, goals, shooting accuracy (proxy via goals_per90), assists per 90, and goals per 90.",
+        "players": result
+    }
 @app.get("/match/{match_number}")
 def match_details(match_number: int): 
     result = get_match_by_number(match_number)
